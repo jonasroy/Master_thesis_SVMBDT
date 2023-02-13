@@ -11,14 +11,11 @@
 #define HSI_X 100
 #define HSI_Y 100
 #define PREDICTED_IMAGE_SIZE 10000
-#define MAX_FILE_SIZE 5000000
+#define MAX_FILE_SIZE 6000000
 #define MAX_FEATURE_SIZE 240
 #define FILE_PATH "C:\\Users\\jonas\\Master_Thesis\\Master_thesis_SVMBDT\\Results\\Binary_Results\\"
 
 #define SVM_LINEAR_FILE_PATHS 
-
-
-
 
 struct SVM_Linear
 {

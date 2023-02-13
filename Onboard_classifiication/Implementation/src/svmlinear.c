@@ -152,6 +152,7 @@ float hex_to_float(char string[]){
 
 }
 
+/*
 int count_char(unsigned char string[]){
     int count = 0;    
     //Counts each character except space  
@@ -162,6 +163,7 @@ int count_char(unsigned char string[]){
 
     return count; 
 }
+*/ 
 
 //string hex_values_combined_little_endian(){
 
@@ -172,70 +174,18 @@ void fill_svm_linear_little_endian(struct file_buffer* fb, struct SVM_Linear* sv
     unsigned char str[12]; 
     float w_buffer;
 
+/*
     unsigned char x1[5]; 
     unsigned char x2[5]; 
     unsigned char x3[5]; 
     unsigned char x4[5]; 
-
+*/ 
   
     //sprintf(str, "%s%x", "0x", fb->buffer[4]); 
     svm->b = 0.021 - 0.0382; //-0.0382; 
     int w_index = 0; 
  
     for(int i = 5; i < sizeof(fb->buffer); i = i + 4){
-
-        /*
-        if(count_char(&(fb->buffer[i+1])) <= 1){
-            sprintf(x1, "%s%x", "0", fb->buffer[i+1]); 
-        }
-        else{
-            sprintf(x1, "%x", fb->buffer[i+1]);
-        }
-
-        if(count_char(&(fb->buffer[i])) <= 1){
-            sprintf(x2, "%s%x", "0", fb->buffer[i]); 
-        }
-        else{
-           sprintf(x2, "%x", fb->buffer[i]);
-        }
-
-        if(count_char(&(fb->buffer[i+3])) <= 1){
-            sprintf(x3, "%s%x", "0", fb->buffer[i+3]); 
-        }
-        else{
-            sprintf(x3, "%x", fb->buffer[i+3]);
-        }
-
-        if(count_char(&(fb->buffer[i+2])) <= 1){
-            sprintf(x4, "%s%x", "0", fb->buffer[i+2]); 
-        }
-        else{
-            sprintf(x4, "%x", fb->buffer[i+2]);
-        }
-        */ 
-       /*
-        if(count_char(fb->buffer[i+1]) < 2){
-            sprintf(str, "%s%s%02x%02x%02x%02x", "0x" , "0" ,fb->buffer[i+1], fb->buffer[i], fb->buffer[i+3], fb->buffer[i+2]);
-        }
-
-        if(count_char(fb->buffer[i]) < 2){
-            sprintf(str, "%s%02x%s%02x%02x%02x", "0x" , fb->buffer[i+1], "0", fb->buffer[i], fb->buffer[i+3], fb->buffer[i+2]);
-        }
- 
-
-        if(count_char(fb->buffer[i+3]) < 2){
-           sprintf(str, "%s%02x%02x%s%02x%02x", "0x" , fb->buffer[i+1], fb->buffer[i], "0", fb->buffer[i+3], fb->buffer[i+2]);
-        }
-
-
-        if(count_char(fb->buffer[i+2]) < 2){
-           sprintf(str, "%s%02x%02x%02x%s%02x", "0x" , fb->buffer[i+1], fb->buffer[i], fb->buffer[i+3], "0", fb->buffer[i+2]);
-        }
-   
-        */
-
-
-        //sprintf(str, "%s%02x%02x%02x%02x", "0x" , x1, x2, x3, x4);
 
         sprintf(str, "%s%02x%02x%02x%02x", "0x" , fb->buffer[i+1], fb->buffer[i], fb->buffer[i+3], fb->buffer[i+2]);
         w_buffer = hex_to_float(str); 
@@ -265,10 +215,10 @@ void fill_data_little_endian(struct file_buffer* fd,struct process_HSI* ph){
     unsigned long x_index = 0;
     unsigned char str[12];
 
-    for(unsigned long i = 2; i < 1407900; i = i + 4){
+    for(unsigned long i = 2; i < (9025*155)-2; i = i + 4){
 
         sprintf(str, "%s%02x%02x%02x%02x", "0x" , fd->buffer[i+1], fd->buffer[i], fd->buffer[i+3], fd->buffer[i+2]);
-        ph->X[x_index] = hex_to_float(str) - 0.00029;; 
+        ph->X[x_index] = hex_to_float(str) - 0.00029;
         x_index++; 
     }
 }
@@ -283,10 +233,13 @@ int svmlinear_predict(struct SVM_Linear* svm, struct process_HSI *pH, struct Lab
         prediction_buffer = 0; 
 
         for(int j = 0; j < 156; j++){
-            prediction_buffer = prediction_buffer + (svm->w[j]) * (pH->X[i*156 + j]) + (svm->b);
+            prediction_buffer = prediction_buffer + ((svm->w[j]) * (pH->X[i*156 + j])) + (svm->b);
         }
+
+       // image->predicted_image[i] = (prediction_buffer/156); 
+    //}
         
-        if(prediction_buffer/156 >= 0){
+        if((prediction_buffer/156) >= 0){
             image->predicted_image[i] = svm->classes[1]; 
         }
 
@@ -294,6 +247,7 @@ int svmlinear_predict(struct SVM_Linear* svm, struct process_HSI *pH, struct Lab
             image->predicted_image[i] = svm->classes[0]; 
         }
     }
+     
 
     return 0; 
 }
@@ -335,19 +289,25 @@ int main(){
     
     
     fill_data_little_endian(fd, pH); 
-
+/*
     svmlinear_predict(svm, pH, image);
     //svmlinear_predict(struct SVM_Linear* svm, struct process_HSI *pH, struct Labeled_Image* image)
 
     write_csv_file(image);
-
+*/ 
     //for(int i = 0; i < 10; i++){
     //printf("%f\n", svm->w[i]);
     //}
 
-    //for(int i = 0; i < 100; i++){
+    //for(int i = 1000000; i < 1000010; i++){
     //printf("%f\n", pH->X[i]);
     //}
+
+    //for(int i = 0; i < 5; i++){
+    //    printf("%f\n", image->predicted_image[i]);
+    //}
+
+    printf("%i\n", sizeof(pH->X)); 
 
     free(fd);
     free(svm); 
