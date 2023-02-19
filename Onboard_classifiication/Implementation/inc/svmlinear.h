@@ -20,10 +20,22 @@
 struct SVM_Linear
 {
     uint8_t classes[MAX_CLASSES];
-    int w_width;  
-    float w[MAX_FEATURE_SIZE]; 
+    uint8_t n_features;  
+    float w_mean;
     float b;
+    float w[MAX_FEATURE_SIZE];
 };
+   
+    
+
+struct SVM_Sparse{
+    uint8_t classes[MAX_CLASSES]; 
+    
+};
+
+struct process_HSI_mean{
+    float X[1000000];
+}
 
 struct process_HSI{
     /*uint16_t x_width[1024]; */ 
@@ -31,9 +43,11 @@ struct process_HSI{
 };
 
 struct Binary_Desion_Tree{
-    uint8_t kernel_type;
-    uint8_t architecture_layer[64];
-    uint8_t architecture_branches[256];     
+    unsigned char svm_models_filenames[32];
+    uint8_t n_layers; 
+    uint8_t max_layers_width; 
+    uint8_t tree_branches[32][2]; //Classes in the branches
+         
 };
 
 struct Labeled_Image{ 
