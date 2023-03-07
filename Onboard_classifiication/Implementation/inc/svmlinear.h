@@ -14,6 +14,13 @@
 #define MAX_FILE_SIZE 6000000
 #define MAX_FEATURE_SIZE 240
 #define FILE_PATH "C:\\Users\\jonas\\Master_Thesis\\Master_thesis_SVMBDT\\Results\\Binary_Results\\"
+#define LINEAR_SVM_MODEL_NAME "lsm"
+#define BYTE_SIZE 4
+#define TWO_BYTE_DELTA_UNIFORM 3.0518e-05
+#define FOUR_BYTE_DELTA_UNIFORM 4.6566e-10
+#define VIGO_SIZE 217968
+
+
 
 #define SVM_LINEAR_FILE_PATHS 
 
@@ -34,12 +41,12 @@ struct SVM_Sparse{
 };
 
 struct process_HSI_mean{
-    float X[1000000];
-}
+    float X[10];
+};
 
 struct process_HSI{
     /*uint16_t x_width[1024]; */ 
-    float X[MAX_FILE_SIZE]; 
+    float X[VIGO_SIZE][160]; 
 };
 
 struct Binary_Desion_Tree{
@@ -52,7 +59,7 @@ struct Binary_Desion_Tree{
 
 struct Labeled_Image{ 
     uint8_t classes[MAX_CLASSES]; 
-    uint8_t predicted_image[PREDICTED_IMAGE_SIZE];  
+    uint8_t predicted_image[VIGO_SIZE];  
 };
 
 struct normalize{

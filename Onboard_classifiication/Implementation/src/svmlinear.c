@@ -62,20 +62,33 @@ float mean_calculate(float* prediction_array[]){
     return mean_value; 
 }
 */
+float hex_int_to_float_two_byte(int value){
+    float con_value = value*TWO_BYTE_DELTA_UNIFORM; //Converted value
+    return con_value; 
+}
+
+float hex_int_to_float_four_byte(int value){
+    float con_value = value*FOUR_BYTE_DELTA_UNIFORM; //Converted value
+    return con_value; 
+}
 
 
 
-uint8_t svm_linear_bdt(uint8_t class_1, uint8_t class_2, float x, float w_i, float b){
+uint8_t svm_linear_bdt(X_i, svm_models[]){
 
-    //Usage with the Binary Desicion Tree Alogrithm. 
-    float pred = x * w_i + b; 
+    //Usage with the Binary Desicion Tree Alogrithm.
+    float pred = 0; 
 
-    if(pred >= 0){
-        return class_2; 
+    for(int i = 3; i < sizeof(X_i); i++){
+        pred += X_i[i-3] * svm_models[i] + svm_models[2];
+    }
+
+    if(pred/sizeof(X_i) >= 0){
+        return 1; 
     }
     
     else{
-        return class_1; 
+        return 0; 
     }
 }
 
@@ -262,49 +275,180 @@ float get_w_mean(struct file_buffer *fb){
 
 }
 
+int hex_to_float_1_byte(int hex_value){
+    unsigned char str[4]; 
+    sprintf(str, "%s%02x", "0x", hex_value);
+    return hex_to_float(str);
+}
 
 
-
-
-int binary_descion_tree(struct Binary_Desion_Tree* bdt, struct Labeled_Image* image, struct process_HSI_mean pH){
-
-    struct file_buffer *fb = (struct file_buffer*)malloc(sizeof(struct file_buffer));
-    struct SVM_Linear *svm = (struct SVM_Linear*)malloc(sizeof(struct SVM_Linear));
-    
-    fill_svm_linear_little_endian(fb,svm); 
-
-    read_binary_file(bdt->svm_models_filenames[i], fb);
-
-    float X_mean_pixel[228*958];
-    unsigned char X_char[4];
-    int x_count = 0; 
-
-    for(int i = 0; i < 228*958; i = i + 3){
-        X_mean_pixel[x_count] = (pH->X[i] + pH->X[i + 1] + pH->X[i + 2])/3 
-        x_count++; 
-    } 
-
-    for(int i = 0; i < 228*958; i++){
-    
-        image->predicted_image[i] = svmlinear_predict_pixel_mean(X_mean_pixel[i], svm->w_mean, svm->b, svm->classes->[0], svm->classes[1])
-    }
-
-
-    
-
-    
-    free(fb); 
-    free(svm);
-
-
-    return 0; 
+float hex_array_to_float(unsigned char* hex_array[4]){
+    unsigned char str[10];
+    sprintf(str, "%s%02x%02x%02x%02x", "0x" , hex_array[0], hex_array[1], hex_array[3], hex_array[4]);
+    return hex_to_float(str);
 
 }
+
+
+
+int get_svm_models(struct file_bufffer* bdt_config, float svm_models[16][160], int modus){
+
+    char file_track[]; 
+    char svm_model_name_number[5];
+    char svm_model_file_name[20];  
+    uint8_t check_model_exist;
+    unsigned char file_buffer[160*4 + 1]; 
+    unsigned char hex_array[4]; 
+    int svm_model_index;
+
+    if(modus == 0){
+        for(int = 0; i < sizeof(bdt_config); i++){
+            check_model_exist = 0; 
+            sprintf(svm_model_name_number, "%x", bdt_config[i])
+            for(int j = 0; j < sizeof(file_track); j++){
+                if(file_track[j] == svm_model_name_number){
+                    check_model_exist = 1; 
+                }
+            if(check_model_exist == 0){
+                svm_model_index = 0; 
+                sprintf(svm_model_file_name, LINEAR_SVM_MODEL_NAME, svm_model_name_number);
+
+                FILE *ptr_file;
+                ptr_file = fopen(svm_model_file_name, "rb"); 
+
+                fread(file_buffer,sizeof(file_buffer),1,ptr_file); 
+
+                svm_models[i][0] =  hex_to_float_1_byte(file_buffer[0]); //class1
+                svm_models[i][1] =  hex_to_float_1_byte(file_buffer[1]); //class2
+
+                for(int l = 0; l < BYTE_SIZE; l++){
+                    hex_array[l] = file_buffer[5-l]; 
+                }    
+                svm_models[i][2] =  hex_array_to_float(hex_array)//b
+
+                for(int k = 9; k < sizeof(file); k+4){
+                    for(int l = 0; l < BYTE_SIZE; l++){
+                        hex_array[l] = file_buffer[k-l];
+                    }
+                    svm_models[i][svm_model_index] = hex_array_to_float(hex_array);
+                    svm_model_index++;
+                }
+
+
+                fclose(ptr_file); 
+
+            }
+        }
+    } 
+}
+
+
+uint8_t svm_linear(float X_i[], float svm_model[]){
+    float pred = 0; 
+
+    for(int i = 0; i < sizeof(X_i); i++){
+        pred += (X_i[i] * svm_model[3+i]) + svm_model[2];
+    }
+
+    if(pred >= 0){
+        return 1; 
+    }
+
+    else{
+        return 0; 
+    }
+
+}
+
+
+
+int binary_desion_tree_predict(X[][], bdt[][]){
+
+   
+    float svm_models[][]; 
+    int svm_models_index = 0;
+    int previous_index = 0; 
+    uint8_t pixel_holder = 0; 
+    int labeled_image[];
+
+     // SVM Load Models into array
+
+     for(int i = 0 ; i < sizeof(X); i++){
+        previous_index = svm_models_index; 
+        pixel_holder = svm_linear(X[i], svm_models[svm_model_index]); 
+
+        if(pixel_holder > 0){
+            svm_model_index = bdt[svm_model_index][1]; 
+        }
+
+        else{
+            svm_model_index = bdt[svm_model_index][2];
+        }
+
+        if(svm_models_index == 0){
+
+            if(pixel_holder > 0){
+                labeled_image[i] = svm_modeles[previous_index][0];
+            }
+
+            else{
+                labeled_image[i] = svm_models[previous_index][1]; 
+            }
+
+            break; 
+
+
+        }
+
+     }
+
+}
+
+int int_to_svm_model_name(int value){
+    int fist_value = (int)((value - value%16)/16); 
+    int second_value = (int)(value%16); 
+    unsigned char model_name[5];
+    int length = 0; 
+
+    if(first_value < 10){
+        length += sprintf(models_name + length, "%d" , first_value);
+    }
+}
+
+
+int models_names(bdt[][]){
+    unsigned char svm_model_list[]; 
+
+
+    for(int i = 0; i < sizeof(bdt); i++){
+        unsigned char c[2][2] = int_to_svm_model_name(bdt[i][i]); 
+        if()
+    }
+
+    return 0; 
+}
+
+
+
+int linear_svm_models_load(unsigned char path, bdt[][]){
+
+    //import os
+    
+    float svm_models_array[]; 
+    //LINEAR_SVM_MODEL_NAME
+
+
+
+}
+
+
 
 
 ///////////////////////////////////////////////////
 /// Main
 //////////////////////////////////////////////////
+
+/*
 
 int main(){
 
@@ -329,12 +473,12 @@ int main(){
     
 
 
-/*
+
     svmlinear_predict(svm, pH, image);
     //svmlinear_predict(struct SVM_Linear* svm, struct process_HSI *pH, struct Labeled_Image* image)
 
     write_csv_file(image);
-*/ 
+
     //for(int i = 0; i < 10; i++){
     //printf("%f\n", svm->w[i]);
     //}
@@ -361,8 +505,7 @@ int main(){
     return 0; 
 }
  
-
-
+*/z
     
 
 
